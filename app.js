@@ -45,6 +45,15 @@ function init() {
                 case "Add Role":
                     addRole();
                     break;
+                case "View Departments":
+                    viewTable("department");
+                    break;
+                case "View Roles":
+                    viewTable("role");
+                    break;
+                case "View Employees":
+                    viewTable("employee");
+                    break;
             }
         })
 }
@@ -68,6 +77,7 @@ function addDept() {
 
                 })
             console.log(query.sql)
+            init()
         })
 }
 
@@ -96,5 +106,57 @@ function addRole() {
 
                 })
             console.log(query.sql)
+            init()
         })
+}
+
+// function addEmployee() {
+//     inquirer
+//         .prompt([
+//             {
+//                 name: "firstName",
+//                 type: "input",
+//                 message: "What is the employee's first name?"
+//             },
+//             {
+//                 name: "lastName",
+//                 type: "input",
+//                 message: "What is the employee's last name?",
+//             },
+//             {
+//                 name: 'role',
+//                 type: "rawlist",
+//                 choices: getRoles()
+//             },
+//             {
+//                 name: 'manager',
+//                 type: "rawlist",
+//                 choice: getEmployees()
+//             }
+//         ])
+//         .then((answer) => {
+//             console.log(answer)
+//             const query = connection.query(
+//                 "INSERT INTO role (title, salary) VALUES (?, ?)",
+//                 [answer.role, answer.salary],
+//                 function (err, res) {
+//                     if (err) throw err;
+//                     console.log(res.affectedRows + " role added!\n")
+
+//                 })
+//             console.log(query.sql)
+//         })
+// }
+
+function viewTable(table) {
+    const query = connection.query(
+        `SELECT * FROM ${table}`,
+        function (err, res) {
+            if (err) throw err;
+            res.forEach(row => {
+                console.log(row)
+            });
+        }
+    )
+    console.log(query.sql)
 }
