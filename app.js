@@ -40,14 +40,17 @@ function init() {
         .then((answer) => {
             switch (answer.action) {
                 case "Add Department":
-                    addToTable();
+                    addDept();
+                    break;
+                case "Add Role":
+                    addRole();
                     break;
             }
         })
 }
 
 
-function addToTable() {
+function addDept() {
     inquirer
         .prompt({
             name: "department",
@@ -59,11 +62,39 @@ function addToTable() {
             const query = connection.query(
                 "INSERT INTO department (name) VALUES (?)",
                 [answer.department],
-                function(err, res) {
+                function (err, res) {
                     if (err) throw err;
                     console.log(res.affectedRows + " department added!\n")
 
                 })
-                console.log(query.sql)
+            console.log(query.sql)
+        })
+}
+
+function addRole() {
+    inquirer
+        .prompt([
+            {
+                name: "role",
+                type: "input",
+                message: "What is the name of the role?"
+            },
+            {
+                name: "salary",
+                type: "input",
+                message: "What is the starting salary for this role?",
+            }
+        ])
+        .then((answer) => {
+            console.log(answer)
+            const query = connection.query(
+                "INSERT INTO role (title, salary) VALUES (?, ?)",
+                [answer.role, answer.salary],
+                function (err, res) {
+                    if (err) throw err;
+                    console.log(res.affectedRows + " role added!\n")
+
+                })
+            console.log(query.sql)
         })
 }
