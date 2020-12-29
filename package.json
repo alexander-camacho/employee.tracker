@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "create-db": "mysql -u root -p < ./db/schema.sql",
+    "seed-db": "mysql -u root -p < ./db/seeds.sql"
   },
   "repository": {
     "type": "git",
@@ -18,6 +20,7 @@
   },
   "homepage": "https://github.com/alexander-camacho/employee.tracker#readme",
   "dependencies": {
+    "console.table": "^0.10.0",
     "inquirer": "^7.3.3",
     "mysql": "^2.18.1"
   }
