@@ -18,13 +18,9 @@ const connection = mysql.createConnection({
 
 const roles = []
 const employees = []
-var someguy = 'John Doe'
 
 connection.connect(function (err) {
     if (err) throw err;
-    getRoles()
-    getEmployees()
-    managerId(someguy)
     init()
 });
 
@@ -141,32 +137,33 @@ function addEmployee() {
             {
                 name: 'role',
                 type: "list",
-                choices: roles
+                choices: getRoles()
             },
             {
                 name: 'manager',
                 type: "list",
-                choices: employees
+                choices: getEmployees()
             }
         ])
         .then((answer) => {
             console.log(answer)
-            var userRole = answer.role
+            var userRole = getRoles().indexOf(answer.role) + 1
+            var userManager = getEmployees().indexOf(answer.manager) + 1
             console.log(userRole)
             const query = "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?);"
-            connection.query(query, [answer.firstName, answer.lastName, roleId(answer.role), managerId(answer.manager)],
+            connection.query(query, [answer.firstName, answer.lastName, userRole, userManager],
                 function (err, res) {
                     if (err) throw err;
-                    console.log(res.affectedRows + " role added!\n")
+                    console.log(res.affectedRows + " employee added!\n")
 
                 })
-            console.table(query.sql)
+            init()
         })
 }
 
 function viewTable(table) {
-    const query = `SELECT * FROM ?;`
-    connection.query(query, [table],
+    const query = `SELECT * FROM ${table};`
+    connection.query(query,
         function (err, res) {
             if (err) throw err;
             console.table(res)
@@ -183,6 +180,7 @@ function getRoles() {
             roles.push(role.title)
         });
     })
+    return roles
 }
 
 function getEmployees() {
@@ -193,24 +191,10 @@ function getEmployees() {
             employees.push(`${employee.first_name} ${employee.last_name}`)
         });
     })
+    return employees
 }
 
-function roleId(role) {
-    const query = "SELECT id FROM role WHERE title = ?;"
-    connection.query(query, [role],
-        (err, res) => {
-            if (err) throw err
-            return res[0].id
-        })
-}
-
-function managerId(name) {
-    var newName = name.split(' ')
-    const query = "SELECT id FROM employee WHERE first_name = ? AND last_name = ?;"
-    connection.query(query, [newName[0], newName[1]],
-        (err, res) => {
-            if (err) throw err
-            // console.log(res[0].id)
-            return res[0].id
-        })
-}
+// SELECT first_name, last_name, title, salary
+// FROM employee_tracker_db.employee
+// INNER JOIN employee_tracker_db.role
+// 	ON employee.role_id = role.id; 
