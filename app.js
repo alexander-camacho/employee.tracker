@@ -40,7 +40,7 @@ function init() {
                 "Add Employee",
                 // "View Departments",
                 "View Roles By Department",
-                "View Employees",
+                "View Employees By Department",
                 "Update Employee Role",
                 "Exit"
             ]
@@ -58,7 +58,7 @@ function init() {
                 case "Add Employee":
                     addEmployee();
                     break;
-                case "View Employees":
+                case "View Employees By Department":
                     viewEmployees();
                     break;
                 // case "View Departments":
@@ -199,7 +199,7 @@ function addEmployee() {
 function viewEmployees() {
     // A select query that will display information about the employees based on information from the 3 associated tables.
     // First determine the columns that are needed (employee.first_name, employee.last_name, title, salary, department,
-    const query = "SELECT concat(employee.first_name,' ', employee.last_name) AS name, title, salary, department, concat(manager.first_name, ' ', manager.last_name) AS manager FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.id LEFT JOIN employee manager on employee.manager_id = manager.id;"
+    const query = "SELECT concat(employee.first_name,' ', employee.last_name) AS name, title, salary, department, concat(manager.first_name, ' ', manager.last_name) AS manager FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.id LEFT JOIN employee manager on employee.manager_id = manager.id ORDER BY department,name ASC;"
 
     connection.query(query, (err, res) => {
         if (err) throw err;
