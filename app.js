@@ -64,7 +64,7 @@ function init() {
                 // case "View Departments":
                 //     viewTable("department");
                 //     break;
-                case "View Roles":
+                case "View Roles By Department":
                     viewRoles();
                     break;
                 // If Exit is select the program will close.
