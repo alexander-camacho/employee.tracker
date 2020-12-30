@@ -39,7 +39,7 @@ function init() {
                 "Add Role",
                 "Add Employee",
                 // "View Departments",
-                // "View Roles",
+                "View Roles By Department",
                 "View Employees",
                 "Update Employee Role",
                 "Exit"
@@ -64,9 +64,9 @@ function init() {
                 // case "View Departments":
                 //     viewTable("department");
                 //     break;
-                // case "View Roles":
-                //     viewTable("role");
-                //     break;
+                case "View Roles":
+                    viewRoles();
+                    break;
                 // If Exit is select the program will close.
                 case "Exit":
                     connection.end();
@@ -262,4 +262,14 @@ function getDepartments() {
     })
     // Return the departments array.
     return departments
+}
+
+function viewRoles() {
+    const query = "SELECT title, salary, department FROM role INNER JOIN department ON role.department_id = department.id ORDER BY department ASC"
+    connection.query(query, (err, res) => {
+        if (err) throw err;
+
+        console.table(res)
+        init()
+    })
 }
