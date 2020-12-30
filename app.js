@@ -17,7 +17,7 @@ const connection = mysql.createConnection({
 });
 
 const roles = []
-const employees = []
+const employees = ['None']
 
 connection.connect(function (err) {
     if (err) throw err;
@@ -36,8 +36,8 @@ function init() {
                 "Add Department",
                 "Add Role",
                 "Add Employee",
-                "View Departments",
-                "View Roles",
+                // "View Departments",
+                // "View Roles",
                 "View Employees",
                 "Update Employee Role",
                 "Exit"
@@ -54,14 +54,14 @@ function init() {
                 case "Add Employee":
                     addEmployee();
                     break;
-                case "View Departments":
-                    viewTable("department");
-                    break;
-                case "View Roles":
-                    viewTable("role");
-                    break;
+                // case "View Departments":
+                //     viewTable("department");
+                //     break;
+                // case "View Roles":
+                //     viewTable("role");
+                //     break;
                 case "View Employees":
-                    viewTable("employee");
+                    viewEmployees();
                     break;
                 case "Exit":
                     connection.end();
@@ -148,8 +148,10 @@ function addEmployee() {
         .then((answer) => {
             console.log(answer)
             var userRole = getRoles().indexOf(answer.role) + 1
-            var userManager = getEmployees().indexOf(answer.manager) + 1
-            console.log(userRole)
+            var userManager = getEmployees().indexOf(answer.manager)
+            if (userManager === "None"){
+                userManager = null
+            }
             const query = "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?);"
             connection.query(query, [answer.firstName, answer.lastName, userRole, userManager],
                 function (err, res) {
@@ -161,16 +163,27 @@ function addEmployee() {
         })
 }
 
-function viewTable(table) {
-    const query = `SELECT * FROM ${table};`
-    connection.query(query,
-        function (err, res) {
-            if (err) throw err;
-            console.table(res)
-            init()
-        }
-    )
+function viewEmployees() {
+    const query = "SELECT employee.first_name, employee.last_name, title, salary, department, concat(manager.first_name, ' ',manager.last_name) AS manager FROM employee_tracker_db.employee INNER JOIN employee_tracker_db.role ON employee.role_id = role.id INNER JOIN employee_tracker_db.department ON role.department_id = department.id LEFT JOIN employee manager on employee.manager_id = manager.id;"
+
+    connection.query(query, (err, res) => {
+        if (err) throw err;
+        console.table(res)
+        init()
+    })
 }
+
+
+// function viewTable(table) {
+//     const query = `SELECT * FROM ${table};`
+//     connection.query(query,
+//         function (err, res) {
+//             if (err) throw err;
+//             console.table(res)
+//             init()
+//         }
+//     )
+// }
 
 function getRoles() {
     const query = "SELECT * FROM role;"
@@ -193,8 +206,3 @@ function getEmployees() {
     })
     return employees
 }
-
-// SELECT first_name, last_name, title, salary
-// FROM employee_tracker_db.employee
-// INNER JOIN employee_tracker_db.role
-// 	ON employee.role_id = role.id; 
