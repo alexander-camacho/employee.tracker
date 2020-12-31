@@ -67,6 +67,8 @@ function init() {
                 case "View Roles By Department":
                     viewRoles();
                     break;
+                case "Update Employee Role":
+                    updateRole();
                 // If Exit is select the program will close.
                 case "Exit":
                     connection.end();
@@ -195,7 +197,7 @@ function addEmployee() {
         })
 }
 
-// Function to view all employees
+// Function to view all employees in the console.
 function viewEmployees() {
     // A select query that will display information about the employees based on information from the 3 associated tables.
     // First determine the columns that are needed (employee.first_name, employee.last_name, title, salary, department,
@@ -208,10 +210,10 @@ function viewEmployees() {
         init()
     })
 }
-// Array that will hold the title of all available roles.
+// Array that will hold the title of all roles.
 var roles = []
 
-// Function to
+// Function to return the list of all roles.
 function getRoles() {
 
     // Query all of the data from the role table. 
@@ -226,10 +228,11 @@ function getRoles() {
     // Return the roles array.
     return roles
 }
-// Array that will hold the names of all available employees.
+// Array that will hold the names of all employees.
 // None is included as a choice for employees with no direct manager.
 var employees = ['None']
 
+// Function to return the list of all employees.
 function getEmployees() {
 
     // Query all of the data from the employee table.
@@ -245,10 +248,10 @@ function getEmployees() {
     return employees
 }
 
-// Array that will hold the name of all available departments.
+// Array that will hold the name of all departments.
 var departments = []
 
-// Function to
+// Function to return the list of departments.
 function getDepartments() {
 
     // Query all of the data from the department table. 
@@ -264,6 +267,7 @@ function getDepartments() {
     return departments
 }
 
+// Function to view the roles in the console.
 function viewRoles() {
     const query = "SELECT title, salary, department FROM role INNER JOIN department ON role.department_id = department.id ORDER BY department ASC"
     connection.query(query, (err, res) => {
@@ -274,7 +278,7 @@ function viewRoles() {
     })
 }
 
-
+// Function to view all departments in the console.
 function viewDepartments() {
     const query = "SELECT * FROM department"
     connection.query(query, (err, res) => {
@@ -284,3 +288,29 @@ function viewDepartments() {
         init()
     })
 }
+
+// Function to update an employee's role.
+function updateRole() {
+
+}
+
+// // Function to update an employee's manager.
+// function updateManager() {
+
+// }
+// // Function to delete a department
+// function deleteDept() {
+
+// }
+// // Function to delete a role
+// function deleteRole() {
+
+// }
+// // Function to delete an employee
+// function deleteEmp() {
+
+// }
+// // Function to view the budget of a department
+// function viewBudget() {
+
+// }
