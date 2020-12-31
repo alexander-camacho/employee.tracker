@@ -35,12 +35,12 @@ function init() {
             type: "list",
             message: "What would you like to do?",
             choices: [
+                "View Employees By Department",
+                "View Roles By Department",
+                "View Departments",
                 "Add Department",
                 "Add Role",
                 "Add Employee",
-                // "View Departments",
-                "View Roles By Department",
-                "View Employees By Department",
                 "Update Employee Role",
                 "Exit"
             ]
@@ -61,9 +61,9 @@ function init() {
                 case "View Employees By Department":
                     viewEmployees();
                     break;
-                // case "View Departments":
-                //     viewTable("department");
-                //     break;
+                case "View Departments":
+                    viewDepartments();
+                    break;
                 case "View Roles By Department":
                     viewRoles();
                     break;
@@ -266,6 +266,17 @@ function getDepartments() {
 
 function viewRoles() {
     const query = "SELECT title, salary, department FROM role INNER JOIN department ON role.department_id = department.id ORDER BY department ASC"
+    connection.query(query, (err, res) => {
+        if (err) throw err;
+
+        console.table(res)
+        init()
+    })
+}
+
+
+function viewDepartments() {
+    const query = "SELECT * FROM department"
     connection.query(query, (err, res) => {
         if (err) throw err;
 
