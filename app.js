@@ -35,6 +35,7 @@ function init() {
             type: "list",
             message: "What would you like to do?",
             choices: [
+                "View Employees",
                 "View Employees By Department",
                 "View Roles By Department",
                 "View Departments",
@@ -42,6 +43,7 @@ function init() {
                 "Add Role",
                 "Add Employee",
                 "Update Employee Role",
+                "Update Employee Manager",
                 "Exit"
             ]
         })
@@ -58,6 +60,9 @@ function init() {
                 case "Add Employee":
                     addEmployee();
                     break;
+                case "View Employees":
+                    viewEmployees();
+                    break;
                 case "View Employees By Department":
                     viewEmployeesByDept();
                     break;
@@ -69,6 +74,9 @@ function init() {
                     break;
                 case "Update Employee Role":
                     updateRole();
+                    break;
+                case "Update Employee Manager":
+                    updateManager();
                     break;
                 // If Exit is select the program will close.
                 case "Exit":
@@ -127,7 +135,7 @@ function addRole() {
 
         ])
         .then((answer) => {
-            
+
             // Assign the new roles deptId to the index of the role that was chosen as the table requires an int value. 1 is also added as the first value in the table is 1 rather than 0 in an array.
             var deptId = getDepartments().indexOf(answer.department) + 1
             // Place the users answers into the query below.
@@ -196,6 +204,20 @@ function addEmployee() {
             // Run the init function again.
             init()
         })
+}
+
+// Function to view all employees in the console.
+function viewEmployees() {
+    // A select query that will display information about the employees based on information from the 3 associated tables.
+    // First determine the columns that are needed (employee.first_name, employee.last_name, title, salary, department,
+    const query = "SELECT employee.id, concat(employee.first_name,' ', employee.last_name) AS name, title, salary, department, concat(manager.first_name, ' ', manager.last_name) AS manager FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.id LEFT JOIN employee manager on employee.manager_id = manager.id;"
+
+    connection.query(query, (err, res) => {
+        if (err) throw err;
+        // Display the results in a console.table(), then run the init() function again.
+        console.table(res)
+        init()
+    })
 }
 
 // Function to view all employees in the console by department.
@@ -293,48 +315,85 @@ function viewDepartments() {
 // Function to update an employee's role.
 function updateRole() {
 
-    
+
     inquirer
-    .prompt([
-        {
-            name: "start",
-            type: "confirm",
-            message: "Are you sure that you want to change an employee's role?",
-        },
-        {
-            name: "employeeName",
-            type: "list",
-            message: "Which employee's role is being changed?",
-            choices: getEmployees()
-        },
-        {
-            name: "newRole",
-            type: "rawlist",
-            message: "What is the employee's new role?",
-            choices: getRoles()
-        },
-    ])
-    .then((answer) => {
+        .prompt([
+            {
+                name: "start",
+                type: "confirm",
+                message: "Are you sure that you want to change an employee's role?",
+            },
+            {
+                name: "employeeName",
+                type: "list",
+                message: "Which employee's role is being changed?",
+                choices: getEmployees()
+            },
+            {
+                name: "newRole",
+                type: "list",
+                message: "What is the employee's new role?",
+                choices: getRoles()
+            },
+        ])
+        .then((answer) => {
 
-        var roleId = getRoles().indexOf(answer.newRole) + 1
-        var employeeId = getEmployees().indexOf(answer.employeeName)
-        console.log(roleId)
-        console.log(employeeId)
+            var roleId = getRoles().indexOf(answer.newRole) + 1
+            var employeeId = getEmployees().indexOf(answer.employeeName)
+            console.log(roleId)
+            console.log(employeeId)
 
-        const query = "UPDATE employee SET role_id = ? WHERE id = ?"
-        connection.query(query, [roleId, employeeId], (err, res) => {
-            if (err) throw err;
-            // Display a success message.
-            console.log(`${answer.employeeName} role updated to ${answer.newRole}!\n`)
+            const query = "UPDATE employee SET role_id = ? WHERE id = ?"
+            connection.query(query, [roleId, employeeId], (err, res) => {
+                if (err) throw err;
+                // Display a success message.
+                console.log(`${answer.employeeName} role updated to ${answer.newRole}!\n`)
+            })
+            init()
         })
-        init()
-    })
 }
 
 // // Function to update an employee's manager.
-// function updateManager() {
+function updateManager() {
+    inquirer
+        .prompt([
+            {
+                name: "start",
+                type: "confirm",
+                message: "Are you sure that you want to change an employee's manager?",
+            },
+            {
+                name: "employeeName",
+                type: "list",
+                message: "Which employee's manager is being changed?",
+                choices: getEmployees()
+            },
+            {
+                name: "newManager",
+                type: "list",
+                message: "Who is the employee's new manager?",
+                choices: getEmployees()
+            },
+        ])
+        .then((answer) => {
 
-// }
+            var managerId = getEmployees().indexOf(answer.newManager)
+            var employeeId = getEmployees().indexOf(answer.employeeName)
+            console.log(managerId)
+            console.log(employeeId)
+            if (managerId === "None") {
+                managerId = null
+            }
+
+            const query = "UPDATE employee SET manager_id = ? WHERE id = ?"
+            connection.query(query, [managerId, employeeId], (err, res) => {
+                if (err) throw err;
+                // Display a success message.
+                console.log(`${answer.employeeName} manager updated to ${answer.newManager}!\n`)
+            })
+            init()
+        })
+}
 // // Function to delete a department
 // function deleteDept() {
 
