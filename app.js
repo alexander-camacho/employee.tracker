@@ -23,12 +23,21 @@ const connection = mysql.createConnection({
 // Start the connection and run the init function.
 connection.connect(function (err) {
     if (err) throw err;
+    startDisplay()
     init()
 });
 
+function startDisplay() {
+    // Banner for the app on loading for the first time, design from  http://www.javascriptkit.com/script/script2/asciitext.shtml
+    // Extra \ added to \'s in the string to account for JS string logic.
+    console.log(" _____       ___  ___   _____   _       _____  __    __  _____   _____  \n| ____|     /   |/   | |  _  \\ | |     /  _  \\ \\ \\  / / | ____| | ____| \n| |__      / /|   /| | | |_| | | |     | | | |  \\ \\/ /  | |__   | |__   \n|  __|    / / |__/ | | |  ___/ | |     | | | |   \\  /   |  __|  |  __|  \n| |___   / /       | | | |     | |___  | |_| |   / /    | |___  | |___  \n|_____| /_/        |_| |_|     |_____| \\_____/  /_/     |_____| |_____| ")
+    console.log(' _____   _____        ___   _____   _   _    _____   _____   \n|_   _| |  _  \\      /   | /  ___| | | / /  | ____| |  _  \\  \n  | |   | |_| |     / /| | | |     | |/ /   | |__   | |_| |  \n  | |   |  _  /    / / | | | |     | |\\ \\   |  __|  |  _  /  \n  | |   | | \\ \\   / /  | | | |___  | | \\ \\  | |___  | | \\ \\  \n  |_|   |_|  \\_\\ /_/   |_| \\_____| |_|  \\_\\ |_____| |_|  \\_\\ ')
+
+}
 
 // Starts an inquirer prompt that gives the user a list of items to choose from.
 function init() {
+
     inquirer
         .prompt({
             name: "action",
@@ -90,7 +99,7 @@ function init() {
                 case "Update Employee Manager":
                     updateManager();
                     break;
-                // If Exit is select the program will close.
+                // If Exit is selected the program will close.
                 case "Exit":
                     connection.end();
                     break;
@@ -197,17 +206,11 @@ function addEmployee() {
             console.log(answer)
 
             let roleId = getRoleId(answer);
-            console.log(roleId)
+            // console.log("role id: " + roleId)
 
             let managerId = getManagerId(answer);
-            // if(answer.manager === "None"){
-            //     managerId = null
-            // } else {
-            //     managerId = managerId
-            // }
-            console.log("manager id: " + managerId)
-            // console.log(managerId[0].id)
-            
+            // console.log("manager id: " + managerId)
+
             // Insert the user's answers into the query below.
             const query = "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?);"
             connection.query(query, [answer.firstName, answer.lastName, roleId, managerId],
@@ -220,6 +223,20 @@ function addEmployee() {
             // Run the init function again.
             init()
         })
+}
+
+// Functions to get the ID of the requested table element.
+function getEmpId(answer) {
+    // getEmployees() returns the list of employees as an array of objects.
+    const empList = getEmployees();
+    // Filter for the employee who's name matches and return their data.
+    const employeeId = empList.filter((employee) => {
+        if (employee.name === answer.employeeName) {
+            return employee;
+        }
+    });
+    // Return the id of the employee.
+    return employeeId[0].id;
 }
 
 function getManagerId(answer) {
@@ -279,64 +296,7 @@ function viewEmployeesByDept() {
         init()
     })
 }
-// Array that will hold the title of all roles.
-var roles = []
-
-// Function to return the list of all roles.
-function getRoles() {
-
-    // Query all of the data from the role table. 
-    const query = "SELECT * FROM role;"
-    connection.query(query, (err, res) => {
-        if (err) throw err;
-        // For each row in the table push only the title into the roles array.
-        res.forEach(role => {
-            roles.push({ id: `${role.id}`, name: `${role.title}` })
-        });
-    })
-    // Return the roles array.
-    return roles
-}
-// Array that will hold the names of all employees.
-// None is included as a choice for employees with no direct manager.
-let employees = [{id: 0, name: 'None'}]
-
-// Function to return the list of all employees.
-function getEmployees() {
-
-    // Query all of the data from the employee table.
-    const query = "SELECT * FROM employee;"
-    connection.query(query, (err, res) => {
-        if (err) throw err;
-        // For each row in the table push the first name and last name into the employees array.
-        res.forEach(employee => {
-            employees.push({ id: `${employee.id}`, name: `${employee.first_name} ${employee.last_name}` })
-        });
-    })
-    // Return the employees array.
-    return employees
-}
-
-// Array that will hold the name of all departments.
-let departments = []
-
-// Function to return the list of departments.
-function getDepartments() {
-
-    // Query all of the data from the department table. 
-    const query = "SELECT * FROM department;"
-    connection.query(query, (err, res) => {
-        if (err) throw err;
-        // For each row in the table push only the title into the department array.
-        res.forEach(row => {
-            departments.push({ id: `${row.id}`, name: `${row.department}` })
-        });
-    })
-    // Return the departments array.
-    return departments
-}
-
-// Function to view the roles in the console.
+// Function to view the roles in the console by department.
 function viewRoles() {
     const query = "SELECT title, salary, department FROM role INNER JOIN department ON role.department_id = department.id ORDER BY department ASC"
     connection.query(query, (err, res) => {
@@ -357,6 +317,63 @@ function viewDepartments() {
         init()
     })
 }
+// Array that will hold the title of all roles.
+var roles = []
+
+// Function to return the list of all roles.
+function getRoles() {
+
+    // Query all of the data from the role table. 
+    const query = "SELECT * FROM role;"
+    connection.query(query, (err, res) => {
+        if (err) throw err;
+        // For each row in the table push the id and title into the roles array.
+        res.forEach(role => {
+            roles.push({ id: `${role.id}`, name: `${role.title}` })
+        });
+    })
+    // Return the roles array.
+    return roles
+}
+// Array that will hold the names of all employees.
+// None is included as a choice for employees with no direct manager.
+let employees = [{ id: 0, name: 'None' }]
+
+// Function to return the list of all employees.
+function getEmployees() {
+
+    // Query all of the data from the employee table.
+    const query = "SELECT * FROM employee;"
+    connection.query(query, (err, res) => {
+        if (err) throw err;
+        // For each row in the table push the id, first name and last name into the employees array.
+        res.forEach(employee => {
+            employees.push({ id: `${employee.id}`, name: `${employee.first_name} ${employee.last_name}` })
+        });
+    })
+    // Return the employees array.
+    return employees
+}
+
+// Array that will hold the name of all departments.
+let departments = []
+
+// Function to return the list of departments.
+function getDepartments() {
+
+    // Query all of the data from the department table. 
+    const query = "SELECT * FROM department;"
+    connection.query(query, (err, res) => {
+        if (err) throw err;
+        // For each row in the table push the id and title into the department array.
+        res.forEach(row => {
+            departments.push({ id: `${row.id}`, name: `${row.department}` })
+        });
+    })
+    // Return the departments array.
+    return departments
+}
+
 
 // Function to update an employee's role.
 function updateRole() {
@@ -399,7 +416,7 @@ function updateRole() {
         })
 }
 
-// // Function to update an employee's manager.
+// Function to update an employee's manager.
 function updateManager() {
     inquirer
         .prompt([
@@ -438,7 +455,8 @@ function updateManager() {
             init()
         })
 }
-// // Function to delete a department
+
+// Function to delete a department
 function deleteDept() {
     inquirer
         .prompt([
@@ -466,7 +484,8 @@ function deleteDept() {
             init()
         })
 }
-// // Function to delete a role
+
+// Function to delete a role
 function deleteRole() {
     inquirer
         .prompt([
@@ -485,9 +504,9 @@ function deleteRole() {
         .then((answer) => {
 
             const roleId = getRoleId(answer);
-            console.log(roleId[0].id)
+            // console.log(roleId)
             const query = "DELETE FROM role WHERE id = ?"
-            connection.query(query, [roleId[0].id], (err, res) => {
+            connection.query(query, [roleId], (err, res) => {
                 if (err) throw err;
                 // Display a success message.
                 console.log(`${answer.role} deleted!\n`)
@@ -495,7 +514,8 @@ function deleteRole() {
             init()
         })
 }
-// // Function to delete an employee
+
+// Function to delete an employee
 function deleteEmp() {
     inquirer
         .prompt([
@@ -514,9 +534,9 @@ function deleteEmp() {
         .then((answer) => {
 
             const employeeId = getEmpId(answer);
-            // console.log(employeeId[0].id)
+            console.log(employeeId)
             const query = "DELETE FROM employee WHERE id = ?"
-            connection.query(query, [employeeId[0].id], (err, res) => {
+            connection.query(query, [employeeId], (err, res) => {
                 if (err) throw err;
                 // Display a success message.
                 console.log(`${answer.employeeName} deleted!\n`)
@@ -525,15 +545,7 @@ function deleteEmp() {
         })
 }
 
-function getEmpId(answer) {
-    const empList = getEmployees();
-    const employeeId = empList.filter((employee) => {
-        if (employee.name === answer.employeeName) {
-            return employee;
-        }
-    });
-    return employeeId;
-}
+
 // // Function to view the budget of a department
 // function viewBudget() {
 
