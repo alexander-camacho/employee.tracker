@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "create-db": "mysql -u root -p < ./db/schema.sql",
-    "seed-db": "mysql -u root -p < ./db/seeds.sql"
+    "seed-db": "mysql -u root -p < ./db/seeds.sql",
+    "start": "node app.js"
   },
   "repository": {
     "type": "git",

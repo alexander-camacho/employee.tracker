@@ -59,7 +59,7 @@ function init() {
                     addEmployee();
                     break;
                 case "View Employees By Department":
-                    viewEmployees();
+                    viewEmployeesByDept();
                     break;
                 case "View Departments":
                     viewDepartments();
@@ -69,6 +69,7 @@ function init() {
                     break;
                 case "Update Employee Role":
                     updateRole();
+                    break;
                 // If Exit is select the program will close.
                 case "Exit":
                     connection.end();
@@ -197,11 +198,11 @@ function addEmployee() {
         })
 }
 
-// Function to view all employees in the console.
-function viewEmployees() {
+// Function to view all employees in the console by department.
+function viewEmployeesByDept() {
     // A select query that will display information about the employees based on information from the 3 associated tables.
     // First determine the columns that are needed (employee.first_name, employee.last_name, title, salary, department,
-    const query = "SELECT concat(employee.first_name,' ', employee.last_name) AS name, title, salary, department, concat(manager.first_name, ' ', manager.last_name) AS manager FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.id LEFT JOIN employee manager on employee.manager_id = manager.id ORDER BY department,name ASC;"
+    const query = "SELECT employee.id, concat(employee.first_name,' ', employee.last_name) AS name, title, salary, department, concat(manager.first_name, ' ', manager.last_name) AS manager FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.id LEFT JOIN employee manager on employee.manager_id = manager.id ORDER BY department,title,name ASC;"
 
     connection.query(query, (err, res) => {
         if (err) throw err;
@@ -292,6 +293,42 @@ function viewDepartments() {
 // Function to update an employee's role.
 function updateRole() {
 
+    
+    inquirer
+    .prompt([
+        {
+            name: "start",
+            type: "confirm",
+            message: "Are you sure that you want to change an employee's role?",
+        },
+        {
+            name: "employeeName",
+            type: "list",
+            message: "Which employee's role is being changed?",
+            choices: getEmployees()
+        },
+        {
+            name: "newRole",
+            type: "rawlist",
+            message: "What is the employee's new role?",
+            choices: getRoles()
+        },
+    ])
+    .then((answer) => {
+
+        var roleId = getRoles().indexOf(answer.newRole) + 1
+        var employeeId = getEmployees().indexOf(answer.employeeName)
+        console.log(roleId)
+        console.log(employeeId)
+
+        const query = "UPDATE employee SET role_id = ? WHERE id = ?"
+        connection.query(query, [roleId, employeeId], (err, res) => {
+            if (err) throw err;
+            // Display a success message.
+            console.log(`${answer.employeeName} role updated to ${answer.newRole}!\n`)
+        })
+        init()
+    })
 }
 
 // // Function to update an employee's manager.
