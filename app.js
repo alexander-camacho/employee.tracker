@@ -407,7 +407,7 @@ function updateRole() {
             console.log(employeeId)
 
             const query = "UPDATE employee SET role_id = ? WHERE id = ?"
-            connection.query(query, [roleId[0].id, employeeId[0].id], (err, res) => {
+            connection.query(query, [roleId, employeeId], (err, res) => {
                 if (err) throw err;
                 // Display a success message.
                 console.log(`${answer.employeeName} role updated to ${answer.newRole}!\n`)
@@ -450,7 +450,7 @@ function updateManager() {
             connection.query(query, [managerId, employeeId], (err, res) => {
                 if (err) throw err;
                 // Display a success message.
-                console.log(`${answer.employeeName} manager updated to ${answer.newManager}!\n`)
+                console.log(`${answer.employeeName} manager updated to ${answer.manager}!\n`)
             })
             init()
         })
