@@ -119,7 +119,6 @@ function addDept() {
 
                 })
             // Run the init function again.
-            console.log(query.sql)
             init()
         })
 }
@@ -153,7 +152,7 @@ function addRole() {
             // Place the users answers into the query below.
             const query = connection.query(
                 "INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?);",
-                [answer.role, answer.salary, deptId[0].id],
+                [answer.role, answer.salary, deptId],
                 function (err, res) {
                     if (err) throw err;
                     // Display a success message.
@@ -197,15 +196,21 @@ function addEmployee() {
         .then((answer) => {
             console.log(answer)
 
-            const roleId = getRoleId(answer);
-            // console.log(roleId[0].id)
+            let roleId = getRoleId(answer);
+            console.log(roleId)
 
-            const managerId = getManagerId(answer);
+            let managerId = getManagerId(answer);
+            // if(answer.manager === "None"){
+            //     managerId = null
+            // } else {
+            //     managerId = managerId
+            // }
+            console.log("manager id: " + managerId)
             // console.log(managerId[0].id)
-
+            
             // Insert the user's answers into the query below.
             const query = "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?);"
-            connection.query(query, [answer.firstName, answer.lastName, roleId[0].id, managerId[0].id],
+            connection.query(query, [answer.firstName, answer.lastName, roleId, managerId],
                 function (err, res) {
                     if (err) throw err;
                     // Display a success message.
@@ -224,7 +229,7 @@ function getManagerId(answer) {
             return employee;
         }
     });
-    return managerId;
+    return managerId[0].id;
 }
 
 function getDeptId(answer) {
@@ -234,7 +239,7 @@ function getDeptId(answer) {
             return dept;
         }
     });
-    return deptId;
+    return deptId[0].id;
 }
 
 function getRoleId(answer) {
@@ -244,7 +249,7 @@ function getRoleId(answer) {
             return role;
         }
     });
-    return roleId;
+    return roleId[0].id;
 }
 
 // Function to view all employees in the console.
@@ -294,7 +299,7 @@ function getRoles() {
 }
 // Array that will hold the names of all employees.
 // None is included as a choice for employees with no direct manager.
-let employees = ['None']
+let employees = [{id: 0, name: 'None'}]
 
 // Function to return the list of all employees.
 function getEmployees() {
@@ -379,7 +384,7 @@ function updateRole() {
         ])
         .then((answer) => {
 
-            const roleId = getRolesId(answer)
+            const roleId = getRoleId(answer)
             const employeeId = getEmpId(answer)
             console.log(roleId)
             console.log(employeeId)
@@ -425,7 +430,7 @@ function updateManager() {
             }
 
             const query = "UPDATE employee SET manager_id = ? WHERE id = ?"
-            connection.query(query, [managerId[0].id, employeeId[0].id], (err, res) => {
+            connection.query(query, [managerId, employeeId], (err, res) => {
                 if (err) throw err;
                 // Display a success message.
                 console.log(`${answer.employeeName} manager updated to ${answer.newManager}!\n`)
@@ -452,9 +457,8 @@ function deleteDept() {
         .then((answer) => {
 
             const deptId = getDeptId(answer);
-            console.log(deptId[0].id)
             const query = "DELETE FROM department WHERE id = ?"
-            connection.query(query, [deptId[0].id], (err, res) => {
+            connection.query(query, [deptId], (err, res) => {
                 if (err) throw err;
                 // Display a success message.
                 console.log(`${answer.department} deleted!\n`)
@@ -510,7 +514,7 @@ function deleteEmp() {
         .then((answer) => {
 
             const employeeId = getEmpId(answer);
-            console.log(employeeId[0].id)
+            // console.log(employeeId[0].id)
             const query = "DELETE FROM employee WHERE id = ?"
             connection.query(query, [employeeId[0].id], (err, res) => {
                 if (err) throw err;
