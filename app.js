@@ -48,6 +48,7 @@ function init() {
                 "View Employees By Department",
                 "View Roles By Department",
                 "View Departments",
+                "View Budget",
                 "Add Employee",
                 "Add Role",
                 "Add Department",
@@ -89,6 +90,9 @@ function init() {
                     break;
                 case "View Departments":
                     viewDepartments();
+                    break;
+                case "View Budget":
+                    viewBudget();
                     break;
                 case "View Roles By Department":
                     viewRoles();
@@ -156,7 +160,7 @@ function addRole() {
         ])
         .then((answer) => {
 
-            // Assign the new roles deptId to the index of the role that was chosen as the table requires an int value. 1 is also added as the first value in the table is 1 rather than 0 in an array.
+            // Assign the new roles deptId with the response from the getDeptId() function.
             const deptId = getDeptId(answer)
             // Place the users answers into the query below.
             const query = connection.query(
@@ -205,10 +209,10 @@ function addEmployee() {
         .then((answer) => {
             console.log(answer)
 
-            let roleId = getRoleId(answer);
+            const roleId = getRoleId(answer);
             // console.log("role id: " + roleId)
 
-            let managerId = getManagerId(answer);
+            const managerId = getManagerId(answer);
             // console.log("manager id: " + managerId)
 
             // Insert the user's answers into the query below.
@@ -272,7 +276,6 @@ function getRoleId(answer) {
 // Function to view all employees in the console.
 function viewEmployees() {
     // A select query that will display information about the employees based on information from the 3 associated tables.
-    // First determine the columns that are needed (employee.first_name, employee.last_name, title, salary, department,
     const query = "SELECT employee.id, concat(employee.first_name,' ', employee.last_name) AS name, title, salary, department, concat(manager.first_name, ' ', manager.last_name) AS manager FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.id LEFT JOIN employee manager on employee.manager_id = manager.id;"
 
     connection.query(query, (err, res) => {
@@ -286,7 +289,6 @@ function viewEmployees() {
 // Function to view all employees in the console by department.
 function viewEmployeesByDept() {
     // A select query that will display information about the employees based on information from the 3 associated tables.
-    // First determine the columns that are needed (employee.first_name, employee.last_name, title, salary, department,
     const query = "SELECT employee.id, concat(employee.first_name,' ', employee.last_name) AS name, title, salary, department, concat(manager.first_name, ' ', manager.last_name) AS manager FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.id LEFT JOIN employee manager on employee.manager_id = manager.id ORDER BY department,title,name ASC;"
 
     connection.query(query, (err, res) => {
@@ -546,7 +548,15 @@ function deleteEmp() {
 }
 
 
-// // Function to view the budget of a department
-// function viewBudget() {
-
-// }
+// Function to view the budget of all departments
+function viewBudget() {
+   
+    const query = "SELECT SUM(salary) as Budget, department FROM employee INNER JOIN role ON employee.role_id = role.id  INNER JOIN department ON role.department_id = department.id GROUP BY department ORDER BY Budget ASC"
+    connection.query(query, (err, res) => {
+        if (err) throw err;
+        
+        console.table(res)
+        
+        init()
+    })
+}
