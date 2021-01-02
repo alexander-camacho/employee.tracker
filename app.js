@@ -39,9 +39,12 @@ function init() {
                 "View Employees By Department",
                 "View Roles By Department",
                 "View Departments",
-                "Add Department",
-                "Add Role",
                 "Add Employee",
+                "Add Role",
+                "Add Department",
+                "Delete Employee",
+                "Delete Role",
+                "Delete Department",
                 "Update Employee Role",
                 "Update Employee Manager",
                 "Exit"
@@ -59,6 +62,15 @@ function init() {
                     break;
                 case "Add Employee":
                     addEmployee();
+                    break;
+                case "Delete Employee":
+                    deleteEmp();
+                    break;
+                case "Delete Role":
+                    deleteRole();
+                    break;
+                case "Delete Department":
+                    deleteDept();
                     break;
                 case "View Employees":
                     viewEmployees();
@@ -137,11 +149,11 @@ function addRole() {
         .then((answer) => {
 
             // Assign the new roles deptId to the index of the role that was chosen as the table requires an int value. 1 is also added as the first value in the table is 1 rather than 0 in an array.
-            var deptId = getDepartments().indexOf(answer.department) + 1
+            const deptId = getDeptId(answer)
             // Place the users answers into the query below.
             const query = connection.query(
                 "INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?);",
-                [answer.role, answer.salary, deptId],
+                [answer.role, answer.salary, deptId[0].id],
                 function (err, res) {
                     if (err) throw err;
                     // Display a success message.
@@ -149,7 +161,6 @@ function addRole() {
 
                 })
             // Run the init function again.
-            console.table(query.sql)
             init()
         })
 }
@@ -186,15 +197,15 @@ function addEmployee() {
         .then((answer) => {
             console.log(answer)
 
-            // Assign the new employee's roleId to the index of the role that was chosen as the table requires an int value. 1 is also added as the first value in the table is 1 rather than 0 in an array.
-            var roleId = getRoles().indexOf(answer.role) + 1
+            const roleId = getRoleId(answer);
+            // console.log(roleId[0].id)
 
-            // Assign the new employee's managerId to the index of the manager that was chosen as the table requires an int value.
-            var managerId = getEmployees().indexOf(answer.manager)
+            const managerId = getManagerId(answer);
+            // console.log(managerId[0].id)
 
             // Insert the user's answers into the query below.
             const query = "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?);"
-            connection.query(query, [answer.firstName, answer.lastName, roleId, managerId],
+            connection.query(query, [answer.firstName, answer.lastName, roleId[0].id, managerId[0].id],
                 function (err, res) {
                     if (err) throw err;
                     // Display a success message.
@@ -204,6 +215,36 @@ function addEmployee() {
             // Run the init function again.
             init()
         })
+}
+
+function getManagerId(answer) {
+    const empList = getEmployees();
+    const managerId = empList.filter((employee) => {
+        if (employee.name === answer.manager) {
+            return employee;
+        }
+    });
+    return managerId;
+}
+
+function getDeptId(answer) {
+    const deptList = getDepartments();
+    const deptId = deptList.filter((dept) => {
+        if (dept.name === answer.department) {
+            return dept;
+        }
+    });
+    return deptId;
+}
+
+function getRoleId(answer) {
+    const roles = getRoles();
+    const roleId = roles.filter((role) => {
+        if (role.name === answer.role) {
+            return role;
+        }
+    });
+    return roleId;
 }
 
 // Function to view all employees in the console.
@@ -245,7 +286,7 @@ function getRoles() {
         if (err) throw err;
         // For each row in the table push only the title into the roles array.
         res.forEach(role => {
-            roles.push(role.title)
+            roles.push({ id: `${role.id}`, name: `${role.title}` })
         });
     })
     // Return the roles array.
@@ -253,7 +294,7 @@ function getRoles() {
 }
 // Array that will hold the names of all employees.
 // None is included as a choice for employees with no direct manager.
-var employees = ['None']
+let employees = ['None']
 
 // Function to return the list of all employees.
 function getEmployees() {
@@ -264,7 +305,7 @@ function getEmployees() {
         if (err) throw err;
         // For each row in the table push the first name and last name into the employees array.
         res.forEach(employee => {
-            employees.push(`${employee.first_name} ${employee.last_name}`)
+            employees.push({ id: `${employee.id}`, name: `${employee.first_name} ${employee.last_name}` })
         });
     })
     // Return the employees array.
@@ -272,7 +313,7 @@ function getEmployees() {
 }
 
 // Array that will hold the name of all departments.
-var departments = []
+let departments = []
 
 // Function to return the list of departments.
 function getDepartments() {
@@ -283,7 +324,7 @@ function getDepartments() {
         if (err) throw err;
         // For each row in the table push only the title into the department array.
         res.forEach(row => {
-            departments.push(row.department)
+            departments.push({ id: `${row.id}`, name: `${row.department}` })
         });
     })
     // Return the departments array.
@@ -330,7 +371,7 @@ function updateRole() {
                 choices: getEmployees()
             },
             {
-                name: "newRole",
+                name: "role",
                 type: "list",
                 message: "What is the employee's new role?",
                 choices: getRoles()
@@ -338,13 +379,13 @@ function updateRole() {
         ])
         .then((answer) => {
 
-            var roleId = getRoles().indexOf(answer.newRole) + 1
-            var employeeId = getEmployees().indexOf(answer.employeeName)
+            const roleId = getRolesId(answer)
+            const employeeId = getEmpId(answer)
             console.log(roleId)
             console.log(employeeId)
 
             const query = "UPDATE employee SET role_id = ? WHERE id = ?"
-            connection.query(query, [roleId, employeeId], (err, res) => {
+            connection.query(query, [roleId[0].id, employeeId[0].id], (err, res) => {
                 if (err) throw err;
                 // Display a success message.
                 console.log(`${answer.employeeName} role updated to ${answer.newRole}!\n`)
@@ -369,7 +410,7 @@ function updateManager() {
                 choices: getEmployees()
             },
             {
-                name: "newManager",
+                name: "manager",
                 type: "list",
                 message: "Who is the employee's new manager?",
                 choices: getEmployees()
@@ -377,16 +418,14 @@ function updateManager() {
         ])
         .then((answer) => {
 
-            var managerId = getEmployees().indexOf(answer.newManager)
-            var employeeId = getEmployees().indexOf(answer.employeeName)
-            console.log(managerId)
-            console.log(employeeId)
+            const managerId = getManagerId(answer)
+            const employeeId = getEmpId(answer)
             if (managerId === "None") {
                 managerId = null
             }
 
             const query = "UPDATE employee SET manager_id = ? WHERE id = ?"
-            connection.query(query, [managerId, employeeId], (err, res) => {
+            connection.query(query, [managerId[0].id, employeeId[0].id], (err, res) => {
                 if (err) throw err;
                 // Display a success message.
                 console.log(`${answer.employeeName} manager updated to ${answer.newManager}!\n`)
@@ -395,17 +434,102 @@ function updateManager() {
         })
 }
 // // Function to delete a department
-// function deleteDept() {
+function deleteDept() {
+    inquirer
+        .prompt([
+            {
+                name: "start",
+                type: "confirm",
+                message: "Are you sure that you want to delete a department?",
+            },
+            {
+                name: "department",
+                type: "list",
+                message: "Which department is being deleted?",
+                choices: getDepartments()
+            },
+        ])
+        .then((answer) => {
 
-// }
+            const deptId = getDeptId(answer);
+            console.log(deptId[0].id)
+            const query = "DELETE FROM department WHERE id = ?"
+            connection.query(query, [deptId[0].id], (err, res) => {
+                if (err) throw err;
+                // Display a success message.
+                console.log(`${answer.department} deleted!\n`)
+            })
+            init()
+        })
+}
 // // Function to delete a role
-// function deleteRole() {
+function deleteRole() {
+    inquirer
+        .prompt([
+            {
+                name: "start",
+                type: "confirm",
+                message: "Are you sure that you want to delete a job role?",
+            },
+            {
+                name: "role",
+                type: "list",
+                message: "Which role is being deleted?",
+                choices: getRoles()
+            },
+        ])
+        .then((answer) => {
 
-// }
+            const roleId = getRoleId(answer);
+            console.log(roleId[0].id)
+            const query = "DELETE FROM role WHERE id = ?"
+            connection.query(query, [roleId[0].id], (err, res) => {
+                if (err) throw err;
+                // Display a success message.
+                console.log(`${answer.role} deleted!\n`)
+            })
+            init()
+        })
+}
 // // Function to delete an employee
-// function deleteEmp() {
+function deleteEmp() {
+    inquirer
+        .prompt([
+            {
+                name: "start",
+                type: "confirm",
+                message: "Are you sure that you want to delete an employee?",
+            },
+            {
+                name: "employeeName",
+                type: "list",
+                message: "Which employee is being deleted?",
+                choices: getEmployees()
+            },
+        ])
+        .then((answer) => {
 
-// }
+            const employeeId = getEmpId(answer);
+            console.log(employeeId[0].id)
+            const query = "DELETE FROM employee WHERE id = ?"
+            connection.query(query, [employeeId[0].id], (err, res) => {
+                if (err) throw err;
+                // Display a success message.
+                console.log(`${answer.employeeName} deleted!\n`)
+            })
+            init()
+        })
+}
+
+function getEmpId(answer) {
+    const empList = getEmployees();
+    const employeeId = empList.filter((employee) => {
+        if (employee.name === answer.employeeName) {
+            return employee;
+        }
+    });
+    return employeeId;
+}
 // // Function to view the budget of a department
 // function viewBudget() {
 
