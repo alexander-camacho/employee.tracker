@@ -6,7 +6,7 @@
 This is a CLI app that allows a user to interact with an SQL database containing data for their workforce. This app uses Node.js, Inquirer to interact with the user, and mySQL to interact with the database. The functions that are available are 
 - Adding (employees, roles, or departments)
 - Deleting (employees, roles, or departments)
-- Viewing (employees, employees by department, roles, or departments)
+- Viewing (employees, employees by department, roles, or departments, budget of all departments)
 - Updating (employee's manager, or employee's role).
 
 ## Table of Contents
@@ -28,7 +28,7 @@ In order to try the application with test data run the following command: ```npm
 
 Finally, within the app.js file the data for the mysql connection will need to be changed to match your connection's data in order to work.
 
-![Connection](/assets/connectionEdit.jpg)
+![Connection](/assets/connectionEdit.JPG)
 
 ## Usage
 This application is started and used within the command line. In order to start the application enter the command: ```npm start```

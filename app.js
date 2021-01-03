@@ -319,6 +319,20 @@ function viewDepartments() {
         init()
     })
 }
+
+// Function to view the budget of all departments
+function viewBudget() {
+   
+    const query = "SELECT SUM(salary) as Budget, department FROM employee INNER JOIN role ON employee.role_id = role.id  INNER JOIN department ON role.department_id = department.id GROUP BY department ORDER BY Budget ASC"
+    connection.query(query, (err, res) => {
+        if (err) throw err;
+        
+        console.table(res)
+        
+        init()
+    })
+}
+
 // Array that will hold the title of all roles.
 var roles = []
 
@@ -545,18 +559,4 @@ function deleteEmp() {
             })
             init()
         })
-}
-
-
-// Function to view the budget of all departments
-function viewBudget() {
-   
-    const query = "SELECT SUM(salary) as Budget, department FROM employee INNER JOIN role ON employee.role_id = role.id  INNER JOIN department ON role.department_id = department.id GROUP BY department ORDER BY Budget ASC"
-    connection.query(query, (err, res) => {
-        if (err) throw err;
-        
-        console.table(res)
-        
-        init()
-    })
 }
